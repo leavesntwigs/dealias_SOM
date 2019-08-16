@@ -1,0 +1,135 @@
+#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <Radx/RadxVol.hh>
+#include <Radx/RadxRay.hh>
+#include <Radx/RadxFile.hh>
+
+
+RadxVol vol;
+
+void addRayToVolume(float az, float gate, float velocity) {
+
+   int sweepNumber = 0;
+
+   //float az = 315.0;
+   float elevation = 0.3;
+
+   RadxRay *ray = new RadxRay();
+   ray->setSweepNumber(sweepNumber);
+   ray->setAzimuthDeg(az);
+   ray->setElevationDeg(elevation);
+   double startKm = 0.0;
+   double gateSpacingKm = gate; // 0.25;
+   ray->setRangeGeom(startKm, gateSpacingKm);
+   bool isLocal = true;
+   float data[1];
+   data[0] = velocity; 
+   float missingValue = Radx::missingFl64;
+   size_t nGates = 1;
+   ray->addField("VEL", "dbz", nGates, missingValue, data, isLocal);
+
+   vol.addRay(ray);
+}
+
+void writeVolume() {
+
+   vol.loadFieldsFromRays();
+   vol.remapRangeGeom(0.0, 0.25, false);
+   vol.loadFieldsFromRays();
+
+   RadxFile radxFile;
+   radxFile.writeToPath(vol, "SOM_result");
+  
+}
+
+int main(int argc, char *argv[]) {
+
+   printf("Hello, Brenda\n");
+   printf("argc = %d\n", argc);
+   for (int i=0; i<argc; i++) {
+
+      printf("%s\n", argv[i]);
+   }
+
+   string line;
+   float azin, gate, velocity;
+   ifstream results;
+   // results.open("result");
+   results.open(argv[1]);
+   if (results.is_open()) {
+      try {
+         while (getline(results,line)) {
+            cout << line << endl;
+            // sscanf(line.c_str(),"%f%f%f", &azin, &gate, &velocity);
+            for (int i=0; i<line.size(); i++) {
+               if ((line[i] == '[') || (line[i] == ']') || (line[i] == ',')) {
+                  line[i] = ' ';
+               }
+            }
+            string::size_type sz, sz2;
+            azin = stod(line, &sz);
+            gate = stod(line.substr(sz), &sz2);
+            string the_rest = line.substr(sz);
+            velocity = stod(the_rest.substr(sz2));
+            cout << "az " << azin << ", gate " << gate << ", velocity " << velocity << endl;
+            addRayToVolume(azin, gate, velocity);
+         }
+      } catch (std::invalid_argument ex) {
+         cout << "Unable to read a float" << endl;
+      }
+      results.close();
+   } else {
+     cout << "Unable to open file";
+   }
+
+   writeVolume();
+   return 0;
+/*
+ 
+[[59.413208 ,  3.5604413,  4.886854 ],
+ [38.083633,  3.265606,  4.509778],
+ [18.094137 ,  2.9830067,  4.9272447],
+ [80.25891  ,  3.1349723,  4.5599174],
+ [65.89754  ,  3.0341396,  2.5781374],
+ [50.090397 ,  3.3666725,  3.3316522],
+
+*/
+
+   
+
+   RadxVol vol;
+   
+   //  read list of points
+   int sweepNumber = 0;
+
+   float az = 315.0;
+   float elevation = 0.3;
+
+   RadxRay *ray = new RadxRay();
+   ray->setSweepNumber(sweepNumber);
+   ray->setAzimuthDeg(az);
+   ray->setElevationDeg(elevation);
+   double startKm = 0.5;
+   double gateSpacingKm = 0.25;
+   ray->setRangeGeom(startKm, gateSpacingKm);
+   bool isLocal = true;
+   float data[12] = {1,2,3,4,5,6,7,8,9,10,11,12};
+   float missingValue = Radx::missingFl64;
+   size_t nGates = 12;
+   ray->addField("VEL", "dbz", nGates, missingValue, data, isLocal);
+
+
+   vol.addRay(ray);
+
+   vol.loadFieldsFromRays();
+
+   RadxFile radxFile;
+   radxFile.writeToPath(vol, "SOM_result.nc");
+   
+   
+
+   return 0;
+}

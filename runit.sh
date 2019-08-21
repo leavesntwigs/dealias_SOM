@@ -402,5 +402,8 @@ SOM_PAK/som_pak-3.1/merge -grid editeddata_model.cod  -din data/20170408/just_a_
   582  more mapping_coords.vis
   583  ls
   584  rm mapping_coords.dat
-  585  history
-  586  history > runit.sh
+
+  628  SOM/radxops merged.dat
+  629  ls -lrt
+  630  mv SOM_result SOM_result_SOM_PAK.nc
+  631  RadxPrint -f SOM_result_SOM_PAK.nc -data -rays | less

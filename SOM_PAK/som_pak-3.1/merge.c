@@ -210,6 +210,7 @@ int main(int argc, char **argv)
   struct teach_params params;
   int retcode, noskip;
   long buffer;
+  float Nyquist;
 
   data = mapping = NULL;
   retcode = 0;
@@ -226,7 +227,10 @@ int main(int argc, char **argv)
   out_data_file = extract_parameter(argc, argv, OUT_DATA_FILE, ALWAYS);
   // grid_data_file = extract_parameter(argc, argv, GRID_DATA_FILE, ALWAYS);
   grid_data_file = extract_parameter(argc, argv, "-grid", ALWAYS);
+  Nyquist = (float) oatoi(extract_parameter(argc, argv, "-Nyq", ALWAYS), 1);
 
+  //  oatoi(extract_parameter(argc, argv, RUNNING_LENGTH, ALWAYS),
+  //	1);
   label_not_needed(1);
 
   float grid[100][100];
@@ -331,7 +335,7 @@ eolroots-air:dealias_SOM candyoh$ more editeddata_model.cod
 
   int dim, dim2,  xdim, ydim;
   char rect[250], bubble[250];
-  float Nyquist = 5.0;
+  //float Nyquist = 5.0;
 
   fscanf(mapping, "%d %s %d %d %s", &dim, rect, &xdim, &ydim, bubble);
   //  printf("junk from mapping file: %s\n", junk);

@@ -30,7 +30,7 @@ void addRayToVolume2(float az, int nGates, float *velocityData) {
    ray->setSweepNumber(sweepNumber);
    ray->setAzimuthDeg(az);
    ray->setElevationDeg(elevation);
-   double startKm = 0.0;
+   double startKm = 2.125;
    double gateSpacingKm = 0.25;
    ray->setRangeGeom(startKm, gateSpacingKm);
    bool isLocal = true;

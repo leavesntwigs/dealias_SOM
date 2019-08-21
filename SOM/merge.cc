@@ -16,7 +16,6 @@ static float previousAz = -1.0;
 static int nGates = 0;
 static bool first = true;
 
-// void accumulateData(az, 
 
 
 void addRayToVolume2(float az, int nGates, float *velocityData) {
@@ -94,15 +93,15 @@ void writeVolume() {
 }
 
 // to use:
-// radxops filename 
+// merge filename 
 int main(int argc, char *argv[]) {
 
-   printf("Hello, Brenda\n");
+   printf("merging data ...\n");
    printf("argc = %d\n", argc);
    for (int i=0; i<argc; i++) {
-
       printf("%s\n", argv[i]);
    }
+   
 
    string line;
    float azin, gate, velocity;

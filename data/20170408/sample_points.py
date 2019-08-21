@@ -8308,10 +8308,17 @@ l = [
 [ 287.757 , 4.875 , -1.500 ], 
 ]
 
+random.seed(783942)
+
 l2 = [] 
 for n in range(0,100):
 	idx = random.randrange(0,len(l))
 	l2 += [l[idx]]
-print l2
+
+print "3" # print the dimension of the data
+for p in l2:
+	az, range, vel = p
+	print az, range, vel
+ 
 
 

@@ -39,55 +39,6 @@ static char *usage[] = {
   "  -dout filename        output filename\n",
   NULL};
 
-// unfolding velocity
-/*
-count = len(mapping)
-idx = 0
-Nyquist = 5
-for tuple in mapping:
-
-  grid_loc, something = tuple
-  # print("observation: ", ray0[idx])
-  # print("mapped to = ", something)
-  az = something[0]
-  range = something[1]
-  ve = something[2]            # expected value
-  az0, range0, va = ray0[idx]  # va = apparent value
-  # add or subtract 2*Nyq until within range of expected value, ve
-  v0 = va
-  upperbound = ve + 2.*Nyquist
-  lowerbound = ve - 2.*Nyquist
-  while (v0 < lowerbound):
-    v0 = v0 + 2.*Nyquist
-  while (v0 > upperbound):
-    v0 = v0 - 2.*Nyquist
-  vr = v0
-  # print("unfolded: az=", az0, " range=", range0, " vr=", vr, " ve=", ve)
-  print("[", az0, ",", range0, ",", vr, "]")
-  idx += 1
-
-
-*/
-
-float unfold(float velocity_expected, float velocity_apparent, float Nyquist) {
-
-  float velocity_unfolded;
-  float v0 = velocity_apparent;
-  float ve = velocity_expected;
-
-  //  v0 = va
-  float upperbound = ve + 2.0*Nyquist;
-  float lowerbound = ve - 2.0*Nyquist;
-  while (v0 < lowerbound) {
-    v0 = v0 + 2.0*Nyquist;
-  }
-  while (v0 > upperbound) {
-    v0 = v0 - 2.*Nyquist;
-  }
-  velocity_unfolded = v0;
-
-  return velocity_unfolded;
-}
 
 struct entries *compute_visual_data(struct teach_params *teach, 
 				    char *out_file_name)
@@ -206,12 +157,12 @@ int main(int argc, char **argv)
   char *in_mapping_file;
   char *out_data_file;
   char *grid_data_file;
-  FILE *data, *mapping, *dout;
+  struct entries *data, *codes;
   struct teach_params params;
   int retcode, noskip;
   long buffer;
 
-  data = mapping = NULL;
+  data = codes = NULL;
   retcode = 0;
 
   global_options(argc, argv);
@@ -302,7 +253,7 @@ eolroots-air:dealias_SOM candyoh$ more editeddata_model.cod
      // look up value in 2D grid
      // unfold v_a
      // write az, range, v_unfolded 
-  data = fopen(in_data_file, "r");
+  data = open_entries(in_data_file);
   if (data == NULL)
     {
       fprintf(stderr, "Can't open data file '%s'\n", in_data_file);
@@ -310,7 +261,7 @@ eolroots-air:dealias_SOM candyoh$ more editeddata_model.cod
       goto end;
     }
   
-  mapping = fopen(in_mapping_file, "r");
+  mapping = open_entries(in_mapping_file);
   if (mapping == NULL)
     {
       fprintf(stderr, "Can't open mapping file '%s'\n", in_mapping_file);
@@ -318,48 +269,12 @@ eolroots-air:dealias_SOM candyoh$ more editeddata_model.cod
       goto end;
     }
 
-  dout = fopen(out_data_file, "w");
-  if (dout == NULL)
-    {
-      fprintf(stderr, "Can't open output file '%s'\n", out_data_file);
-      retcode = 1;
-      goto end;
-    }
 
-  float az, range, velocity_observed, error;
-  int n, m;
-
-  int dim, dim2,  xdim, ydim;
-  char rect[250], bubble[250];
-  float Nyquist = 5.0;
-
-  fscanf(mapping, "%d %s %d %d %s", &dim, rect, &xdim, &ydim, bubble);
-  //  printf("junk from mapping file: %s\n", junk);
-
-  fscanf(data, "%d", &dim2);
-  if (dim2 != dim) printf("FATAL ERROR: wrong dimension\n"); 
-
-  while (fscanf(data, "%f %f %f", &az, &range, &velocity_observed) > 0) {
-    if (fscanf(mapping, "%d %d %f", &n, &m, &error) > 0) {
-      printf("az, range, velocity (%f, %f, %f) mapped to n,m = %d,%d :\t ",
-	     az, range, velocity_observed, n, m); 
-      float v_expected = grid[n][m];
-      float velocity_unfolded = unfold(v_expected, velocity_observed, Nyquist);
-
-      printf("%f %f %f %f\n", az, range, v_expected, velocity_unfolded);
-      fprintf(dout, "%f %f %f\n", az, range, velocity_unfolded);
-
-    } else {
-      printf("Error reading mapping file\n");
-    }
-  }
 
  end:
   if (data)
-    fclose(data);
-  if (mapping)
-    fclose(mapping);
-  if (dout)
-    fclose(dout);
+    close_entries(data);
+  if (codes)
+    close_entries(codes);
   return(retcode);
 }

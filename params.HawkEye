@@ -394,7 +394,7 @@ use_field_label_in_title = FALSE;
 // Type: double
 //
 
-max_range_km = 225;
+max_range_km = 6;
 
 //======================================================================
 //
@@ -488,7 +488,7 @@ site_name = "MARSHALL";
 // Type: int
 //
 
-main_window_width = 1100;
+main_window_width = 2100;
 
 ///////////// main_window_height //////////////////////
 //
@@ -498,7 +498,7 @@ main_window_width = 1100;
 // Type: int
 //
 
-main_window_height = 635;
+main_window_height = 1235;
 
 ///////////// main_window_start_x /////////////////////
 //

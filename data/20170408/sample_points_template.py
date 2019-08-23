@@ -1,4 +1,10 @@
 import random
+# import sys, getopt
+
+# print 'Number of arguments:', len(sys.argv)
+# print 'Argument List:', str(sys.argv)
+
+
 
 l2 = [] 
 l = 
@@ -7,7 +13,7 @@ l =
 # insert data here
 #-------- cut ------
 
-random.seed(783942)
+# random.seed(783942)
 
 l2 = [] 
 for n in range(0,100):

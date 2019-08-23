@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
    if (results.is_open()) {
       try {
          while (getline(results,line)) {
-            cout << line << endl;
+            //cout << line << endl;
             // sscanf(line.c_str(),"%f%f%f", &azin, &gate, &velocity);
             for (int i=0; i<line.size(); i++) {
                if ((line[i] == '[') || (line[i] == ']') || (line[i] == ',')) {
@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
             gate = stod(line.substr(sz), &sz2);
             string the_rest = line.substr(sz);
             velocity = stod(the_rest.substr(sz2));
-            cout << "az " << azin << ", gate " << gate << ", velocity " << velocity << endl;
+            // cout << "az " << azin << ", gate " << gate << ", velocity " << velocity << endl;
             storeRay(azin, gate, velocity);
             // addRayToVolume(azin, gate, velocity);
          }

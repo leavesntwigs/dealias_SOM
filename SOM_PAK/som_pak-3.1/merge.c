@@ -290,14 +290,14 @@ eolroots-air:dealias_SOM candyoh$ more editeddata_model.cod
     for (int m = 0; m < ydim; m++) {
       for (int n = 0; n < xdim; n++) {
          fscanf(grid_data, "%f %f %f", &az, &range, &velocity);
-         printf("%f %f %f\n", az, range, velocity);
+         //printf("%f %f %f\n", az, range, velocity);
          grid[n][m] = velocity;
       }
     }
   }
-  printf("grid[0][0] = %f\n", grid[0][0]);
-  printf("grid[0][0] = %f\n", grid[0][0]);
-  printf("grid[3][2] = %f\n", grid[3][2]);
+  //printf("grid[0][0] = %f\n", grid[0][0]);
+  //printf("grid[0][0] = %f\n", grid[0][0]);
+  //printf("grid[3][2] = %f\n", grid[3][2]);
 
 
   // read mapping file, and data file in tandem;
@@ -345,12 +345,12 @@ eolroots-air:dealias_SOM candyoh$ more editeddata_model.cod
 
   while (fscanf(data, "%f %f %f", &az, &range, &velocity_observed) > 0) {
     if (fscanf(mapping, "%d %d %f", &n, &m, &error) > 0) {
-      printf("az, range, velocity (%f, %f, %f) mapped to n,m = %d,%d :\t ",
-	     az, range, velocity_observed, n, m); 
+      //printf("az, range, velocity (%f, %f, %f) mapped to n,m = %d,%d :\t ",
+//	     az, range, velocity_observed, n, m); 
       float v_expected = grid[n][m];
       float velocity_unfolded = unfold(v_expected, velocity_observed, Nyquist);
 
-      printf("%f %f %f %f\n", az, range, v_expected, velocity_unfolded);
+ //     printf("%f %f %f %f\n", az, range, v_expected, velocity_unfolded);
       fprintf(dout, "%f %f %f\n", az, range, velocity_unfolded);
 
     } else {

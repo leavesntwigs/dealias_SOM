@@ -14,7 +14,7 @@ CFRADIAL_FILE=
 # here are the steps
 
 # 10 15 20 25
-for training_sample_percent in 1 # 10 # 15 20 25
+for training_sample_percent in 1 #0 # 10 # 15 20 25
 do
  
 # extract the data from a RadxPrint of the cfradial data file
@@ -23,11 +23,11 @@ do
 # remember to add the dimension, '3' to the top of the all_points.dat file for SOM_PAK to read
 
 # sample_points.py from sample_points_template.py
-python data/20170408/sample_points_$training_sample_percent.py > data/20170408/training_$training_sample_percent.dat
+#python data/20170408/sample_points_$training_sample_percent.py > data/20170408/training_$training_sample_percent.dat
 
-for xdim in 3 6 9 #  12 
+for xdim in 4 # 3 6 # 9 #  12 
 do
-   for ydim in 3 6
+   for ydim in 3 # 6
    do
 
          
@@ -35,14 +35,17 @@ do
 
       # TODO: also try using randinit to initialize the grid to random values
       echo "initializing ..."
-      SOM_PAK/som_pak-3.1/lininit -xdim $xdim -ydim $ydim -din data/20170408/training_$training_sample_percent.dat -cout editeddata.cod -neigh bubble -topol rect
+      # SOM_PAK/som_pak-3.1/randinit -xdim $xdim -ydim $ydim -din data/20170408/training_$training_sample_percent.dat -cout editeddata.cod -neigh bubble -topol rect
+      # SOM_PAK/som_pak-3.1/randinit -xdim $xdim -ydim $ydim -din data/20170408/training_$training_sample_percent.dat -cout editeddata.cod -neigh gaussian -topol hexa
+      SOM_PAK/som_pak-3.1/lininit -xdim $xdim -ydim $ydim -din data/20170408/training_$training_sample_percent.dat -cout editeddata.cod -neigh gaussian -topol rect
+      #SOM_PAK/som_pak-3.1/lininit -xdim $xdim -ydim $ydim -din data/20170408/training_fixed.dat -cout editeddata.cod -neigh gaussian -topol rect
 
-      for learning_rate in 1 2
+      for learning_rate in 2 #  1 2
       do
-         for neighborhood_radius in 2 5 7 10
+         for neighborhood_radius in  2 #  2 5 7 10
          do
 
-            for ntraining_steps in 50 100 200
+            for ntraining_steps in 50 # 50 100 200
             do 
 
                # train the SOM
@@ -58,7 +61,7 @@ do
                # debug version
                # SOM_PAK/som_pak-3.1/visual -din data/20170408/just_a_few_points.dat -cin editeddata_model.cod -dout mapping_coords.vis -v
   
-               for Nyquist in  2 3 5 7 10
+               for Nyquist in  12 # 2 3 5 7 10
                do
                   # merge the expected values from each grid with the folded data, then unfold as needed to meet expected values
                   # SOM_PAK/som_pak-3.1/merge -grid editeddata_model.cod  -din data/20170408/just_a_few_points.dat -mapping mapping_coords.vis -dout merged.dat -Nyquist $Nyquist

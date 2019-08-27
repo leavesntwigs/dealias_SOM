@@ -69,22 +69,26 @@ for tuple in mapping:
 
 */
 
+      // float velocity_unfolded = unfold(v_expected, velocity_observed, Nyquist);
 float unfold(float velocity_expected, float velocity_apparent, float Nyquist) {
 
-  float velocity_unfolded;
-  float v0 = velocity_apparent;
+  float va = velocity_apparent;
   float ve = velocity_expected;
+  float velocity_unfolded = va;
 
-  //  v0 = va
-  float upperbound = ve + 2.0*Nyquist;
-  float lowerbound = ve - 2.0*Nyquist;
-  while (v0 < lowerbound) {
-    v0 = v0 + 2.0*Nyquist;
+  int n = (int) (fabs(va) - fabs(ve))/(2.0*Nyquist);
+
+  if (n > 0) {
+  float sign = 0.0; 
+  if (va < ve)
+     sign = 1.0;
+  else
+     sign = -1.0;
+  
+  velocity_unfolded = va + sign * n * 2.0*Nyquist;
+  printf("va = %f, ve = %f, n = %d, sign = %f, velocity_unfolded = %f\n",
+          va, ve, n, sign, velocity_unfolded);
   }
-  while (v0 > upperbound) {
-    v0 = v0 - 2.*Nyquist;
-  }
-  velocity_unfolded = v0;
 
   return velocity_unfolded;
 }
@@ -348,6 +352,7 @@ eolroots-air:dealias_SOM candyoh$ more editeddata_model.cod
       //printf("az, range, velocity (%f, %f, %f) mapped to n,m = %d,%d :\t ",
 //	     az, range, velocity_observed, n, m); 
       float v_expected = grid[n][m];
+//      printf("az: %f\n", az);
       float velocity_unfolded = unfold(v_expected, velocity_observed, Nyquist);
 
  //     printf("%f %f %f %f\n", az, range, v_expected, velocity_unfolded);

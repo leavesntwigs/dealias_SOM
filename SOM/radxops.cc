@@ -16,6 +16,10 @@ static float previousAz = -1.0;
 static int nGates = 0;
 static bool first = true;
 
+   double startKm = 2.125;
+   double gateSpacingKm = 0.25;
+
+
 // void accumulateData(az, 
 
 
@@ -30,8 +34,6 @@ void addRayToVolume2(float az, int nGates, float *velocityData) {
    ray->setSweepNumber(sweepNumber);
    ray->setAzimuthDeg(az);
    ray->setElevationDeg(elevation);
-   double startKm = 2.125;
-   double gateSpacingKm = 0.25;
    ray->setRangeGeom(startKm, gateSpacingKm);
    bool isLocal = true;
    float missingValue = Radx::missingFl32;
@@ -44,8 +46,10 @@ void addRayToVolume2(float az, int nGates, float *velocityData) {
 void storeRay(float az, float gate, float velocity) {
 
    if ((az != previousAz) && (!first)) {
-      addRayToVolume2(previousAz, nGates, data);
-      nGates = 0;
+     addRayToVolume2(previousAz, 12, data); // TODO: Magic number!
+     nGates = 0;
+     for (int i=0; i<MAX_GATES; i++) 
+       data[i] = Radx::missingFl32;  // TODO: magic number!
    } 
 
    previousAz = az;   
@@ -54,7 +58,15 @@ void storeRay(float az, float gate, float velocity) {
    }
 
    // accumulate data ...
-   data[nGates] = velocity;
+   //data[nGates] = velocity;
+   float whichGatef =  (gate - startKm)/gateSpacingKm;
+   int whichGate = (int) whichGatef;
+   if ((whichGate < 0) || (whichGate >= MAX_GATES)) {
+     printf("FATAL ERROR gate index out of bounds %d\n", whichGate);
+     exit(-1);
+   }
+     
+   data[whichGate] = velocity;
    nGates += 1;
 }
 
@@ -103,6 +115,9 @@ int main(int argc, char *argv[]) {
 
       printf("%s\n", argv[i]);
    }
+
+   for (int i=0; i<12; i++)
+     data[i] = Radx::missingFl32;  // TODO: magic number!
 
    string line;
    float azin, gate, velocity;

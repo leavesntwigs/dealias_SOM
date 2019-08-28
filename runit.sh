@@ -14,20 +14,20 @@ CFRADIAL_FILE=
 # here are the steps
 
 # 10 15 20 25
-for training_sample_percent in 1 #0 # 10 # 15 20 25
+for training_sample_percent in 1 #10 # 10 # 15 20 25
 do
  
 # extract the data from a RadxPrint of the cfradial data file
-# RadxPrint -f data/20170408/cfrad.20170408_001452.962_to_20170408_001604.560_KARX_Surveillance_SUR_edited0730.nc -data -rays > /tmp/radxprint.out
-# awk -f make_data_vectors.awk /tmp/radxprint.out > all_points.dat 
+# RadxPrint -f data/20170408/cfrad.20170408_001452.962_to_20170408_001604.560_KARX_Surveillance_SUR.nc -data -rays > /tmp/radxprint.out
+# awk -f make_data_vectors.awk /tmp/radxprint.out > just_a_few_points.dat 
 # remember to add the dimension, '3' to the top of the all_points.dat file for SOM_PAK to read
 
 # sample_points.py from sample_points_template.py
 #python data/20170408/sample_points_$training_sample_percent.py > data/20170408/training_$training_sample_percent.dat
 
-for xdim in 4 # 3 6 # 9 #  12 
+for xdim in 5 # 3 6 # 9 #  12 
 do
-   for ydim in 3 # 6
+   for ydim in 5 # 6
    do
 
          
@@ -37,15 +37,17 @@ do
       echo "initializing ..."
       # SOM_PAK/som_pak-3.1/randinit -xdim $xdim -ydim $ydim -din data/20170408/training_$training_sample_percent.dat -cout editeddata.cod -neigh bubble -topol rect
       # SOM_PAK/som_pak-3.1/randinit -xdim $xdim -ydim $ydim -din data/20170408/training_$training_sample_percent.dat -cout editeddata.cod -neigh gaussian -topol hexa
-      SOM_PAK/som_pak-3.1/lininit -xdim $xdim -ydim $ydim -din data/20170408/training_$training_sample_percent.dat -cout editeddata.cod -neigh gaussian -topol rect
+      SOM_PAK/som_pak-3.1/randinit -xdim $xdim -ydim $ydim -din data/20170408/training_$training_sample_percent.dat -cout editeddata.cod -neigh bubble -topol rect
+
+      # SOM_PAK/som_pak-3.1/lininit -xdim $xdim -ydim $ydim -din data/20170408/training_$training_sample_percent.dat -cout editeddata.cod -neigh gaussian -topol rect
       #SOM_PAK/som_pak-3.1/lininit -xdim $xdim -ydim $ydim -din data/20170408/training_fixed.dat -cout editeddata.cod -neigh gaussian -topol rect
 
-      for learning_rate in 2 #  1 2
+      for learning_rate in 1 #  1 2
       do
          for neighborhood_radius in  2 #  2 5 7 10
          do
 
-            for ntraining_steps in 50 # 50 100 200
+            for ntraining_steps in 50 # 100 200 1000  # 50 100 200
             do 
 
                # train the SOM
@@ -61,7 +63,7 @@ do
                # debug version
                # SOM_PAK/som_pak-3.1/visual -din data/20170408/just_a_few_points.dat -cin editeddata_model.cod -dout mapping_coords.vis -v
   
-               for Nyquist in  12 # 2 3 5 7 10
+               for Nyquist in  5  # 2 3 5 7 10
                do
                   # merge the expected values from each grid with the folded data, then unfold as needed to meet expected values
                   # SOM_PAK/som_pak-3.1/merge -grid editeddata_model.cod  -din data/20170408/just_a_few_points.dat -mapping mapping_coords.vis -dout merged.dat -Nyquist $Nyquist
@@ -94,7 +96,17 @@ do
                    # HawkEye should produce a .png image of the data
                    # $HAWKEYE -f $CFRADIAL_FILE -params $HAWKEYE_PARAMS
                    $HAWKEYE -f SOM_result_SOM_PAK.nc -params $HAWKEYE_PARAMS # -images_file_name_category "$xdim-$ydim"
-                   mv /tmp/images/HawkEye/19700101/radar.SOM_dealias.VEL.png $OUTPUT_DIR
+                   mv /tmp/images/HawkEye/19700101/radar.SOM_dealias.VEL.png train-$training_sample_percent-grid-$xdim-$ydim-lr-$learning_rate-nb-$neighborhood_radius-steps-$ntraining_steps-Nq-$Nyquist.png
+                   # --------------
+                   # make an image of the model produced ...
+                   awk '(NR > 1)' editeddata_model.cod > modelready.txt
+                   SOM/radxmodel modelready.txt
+                   mv SOM_result SOM_result.nc
+                   $HAWKEYE -f SOM_result.nc -params $HAWKEYE_PARAMS
+                   mv /tmp/images/HawkEye/19700101/radar.SOM_dealias.VEL.png train-$training_sample_percent-grid-$xdim-$ydim-lr-$learning_rate-nb-$neighborhood_radius-steps-$ntraining_steps-Nq-$Nyquist-model.png
+
+                   # ---------
+
                    mv SOM_result_SOM_PAK.nc $OUTPUT_DIR
                    cp editeddata.cod        $OUTPUT_DIR
                    cp editeddata_model.cod  $OUTPUT_DIR

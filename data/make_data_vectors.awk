@@ -15,8 +15,7 @@
 #
 #
 
-BEGIN { print "[" }
-END   { print "]" }
+BEGIN {print 3}
 /az:/ {az = $2}
 /elev:/ {elev = $2}
 /gateSpacingKm:/ {gateSpacing = $2}
@@ -29,15 +28,23 @@ $0 ~ /[:digit:]*/ { if (start) {
                            # print $i
                            npieces = split($i, pieces, "*")
 # TODO: get rid of "MISS"
-                           if ((npieces > 1) && pieces[2] !~ /MISS/) {
-                              # print "nrepeats = ", pieces[1]
-                              for (n = 1; n <= pieces[1]; n++) {
-                                 velocity = pieces[2]
-                                 range = startRange + gateSpacing * gate
-                                 print "[", az, ",", range, ",", velocity, "], "
-                                 gate += 1
-                              }
-                           }
+                           if (npieces > 1) {
+			       if ( pieces[2] !~ /MISS/) {
+                                  # print "nrepeats = ", pieces[1]
+				   for (n = 1; n <= pieces[1]; n++) {
+                                      velocity = pieces[2]
+                                      range = startRange + gateSpacing * gate
+                                      print az, range, velocity
+                                      gate += 1
+                                   }
+                               } else { # assume MISS
+                                   gate += pieces[1] 
+                               } # end MISS
+			   } #else { # end if npieces > 1
+                              # else no repeater
+			     #  print az, range, $i
+                             #  gate += 1
+			   #} # end else no repeater               
                         }
                       }
                     }

@@ -80,7 +80,7 @@ float unfold(float az, float velocity_expected, float velocity_apparent, float N
   if ((va < -11.0)) {
     printf("az %f va=%f mapped to ve=%f\n", az, va, ve);
   }
-  int n = (int) (va - ve*(1.0+percent))/(2.0*Nyquist);
+  int n = (int) round((va - ve*(1.0+percent))/(2.0*Nyquist));
 
   if (n > 0) {
     //float sign = 0.0;
@@ -241,6 +241,7 @@ int main(int argc, char **argv)
   Nyquist = (float) oatoi(extract_parameter(argc, argv, "-Nyq", ALWAYS), 1);
   percent = (float) oatoi(extract_parameter(argc, argv, "-p", ALWAYS), 1);
   percent = percent / 100.0;
+  printf("Percent is %f\n", percent);
 
   //  oatoi(extract_parameter(argc, argv, RUNNING_LENGTH, ALWAYS),
   //	1);

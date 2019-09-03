@@ -46,10 +46,10 @@ do
 
       for learning_rate in 1 #  1 2
       do
-         for neighborhood_radius in  7 #  2 5 7 10
+         for neighborhood_radius in  2 #  2 5 7 10
          do
 
-            for ntraining_steps in 50 # 10 20 50 100 # 100 200 1000  # 50 100 200
+            for ntraining_steps in 20 # 10 20 50 100 # 100 200 1000  # 50 100 200
             do 
 
                    rm editeddata_model.cod  
@@ -74,7 +74,7 @@ do
                   # merge the expected values from each grid with the folded data, then unfold as needed to meet expected values
                   # SOM_PAK/som_pak-3.1/merge -grid editeddata_model.cod  -din data/20170408/just_a_few_points.dat -mapping mapping_coords.vis -dout merged.dat -Nyquist $Nyquist
                   echo "merging & unfolding ..."
-                  SOM_PAK/som_pak-3.1/merge -grid editeddata_model.cod  -din data/20170408/just_a_few_points.dat -mapping mapping_coords.vis -dout merged.dat -Nyq $Nyquist -p 40
+                  SOM_PAK/som_pak-3.1/merge -grid editeddata_model.cod  -din data/20170408/just_a_few_points.dat -mapping mapping_coords.vis -dout merged.dat -Nyq $Nyquist -p 30
 
 #  426  awk -f tf_result_2list.awk result_fullsize > result_radx_input
 #  427  awk -f tf_result_2list.awk result_fullsize > result_radx_input
@@ -115,6 +115,8 @@ do
 
                    mv SOM_result_SOM_PAK.nc $OUTPUT_DIR
                    mv merged.dat            $OUTPUT_DIR
+
+                   open train-$training_sample_percent-grid-$xdim-$ydim-lr-$learning_rate-nb-$neighborhood_radius-steps-$ntraining_steps-Nq-$Nyquist*.png
 
                 done # for Nyquist
             done # for learning_rate

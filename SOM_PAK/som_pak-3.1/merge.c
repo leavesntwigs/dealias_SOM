@@ -70,24 +70,29 @@ for tuple in mapping:
 */
 
       // float velocity_unfolded = unfold(v_expected, velocity_observed, Nyquist);
-float unfold(float az, float velocity_expected, float velocity_apparent, float Nyquist) {
+float unfold(float az, float velocity_expected, float velocity_apparent, float Nyquist,
+	     float percent) {
 
   float va = velocity_apparent;
   float ve = velocity_expected;
   float velocity_unfolded = va;
 
-  int n = (int) (fabs(va) - fabs(ve))/(2.0*Nyquist);
+  if ((va < -11.0)) {
+    printf("az %f va=%f mapped to ve=%f\n", az, va, ve);
+  }
+  int n = (int) (va - ve*(1.0+percent))/(2.0*Nyquist);
 
   if (n > 0) {
-    float sign = 0.0;
-    if (va < ve)
-      sign = 1.0;
-     else
-       sign = -1.0;
+    //float sign = 0.0;
+    //if (va < ve)
+    //  sign = 1.0;
+    // else
+    //   sign = -1.0;
   
-    velocity_unfolded = va + sign * n * 2.0*Nyquist;
-    printf("az: %f, va = %f, ve = %f, n = %d, sign = %f, velocity_unfolded = %f\n",
-	   az, va, ve, n, sign, velocity_unfolded);
+    //velocity_unfolded = va + sign * n * 2.0*Nyquist;
+    velocity_unfolded = va + (-1) * n * 2.0*Nyquist;
+    printf("az: %f, va = %f, ve = %f, n = %d, velocity_unfolded = %f\n",
+	   az, va, ve, n, velocity_unfolded);
   }
 
   return velocity_unfolded;
@@ -215,9 +220,11 @@ int main(int argc, char **argv)
   int retcode, noskip;
   long buffer;
   float Nyquist;
+  float percent;
 
   data = mapping = NULL;
   retcode = 0;
+  percent = 20;
 
   global_options(argc, argv);
   if (extract_parameter(argc, argv, "-help", OPTION2))
@@ -232,6 +239,8 @@ int main(int argc, char **argv)
   // grid_data_file = extract_parameter(argc, argv, GRID_DATA_FILE, ALWAYS);
   grid_data_file = extract_parameter(argc, argv, "-grid", ALWAYS);
   Nyquist = (float) oatoi(extract_parameter(argc, argv, "-Nyq", ALWAYS), 1);
+  percent = (float) oatoi(extract_parameter(argc, argv, "-p", ALWAYS), 1);
+  percent = percent / 100.0;
 
   //  oatoi(extract_parameter(argc, argv, RUNNING_LENGTH, ALWAYS),
   //	1);
@@ -353,7 +362,8 @@ eolroots-air:dealias_SOM candyoh$ more editeddata_model.cod
 //	     az, range, velocity_observed, n, m); 
       float v_expected = grid[n][m];
 //      printf("az: %f\n", az);
-      float velocity_unfolded = unfold(az, v_expected, velocity_observed, Nyquist);
+      float velocity_unfolded = unfold(az, v_expected, velocity_observed, Nyquist,
+				       percent);
 
  //     printf("%f %f %f %f\n", az, range, v_expected, velocity_unfolded);
       fprintf(dout, "%f %f %f\n", az, range, velocity_unfolded);

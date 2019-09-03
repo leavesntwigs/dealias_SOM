@@ -9,6 +9,7 @@ BASE_OUTPUT_DIR=./results
 # list input and output files
 HAWKEYE=/Applications/HawkEye.app/Contents/MacOS/HawkEye
 HAWKEYE_PARAMS=params.HawkEye
+HAWKEYE_PARAMS_MODEL=params_model.HawkEye
 CFRADIAL_FILE=
  
 # here are the steps
@@ -25,11 +26,12 @@ do
 # sample_points.py from sample_points_template.py
 #python data/20170408/sample_points_$training_sample_percent.py > data/20170408/training_$training_sample_percent.dat
 
-for xdim in 5 # 3 6 # 9 #  12 
+for xdim in  4 # 9 #  12 
 do
-   for ydim in 5 # 6
+   for ydim in 4
    do
 
+                   rm editeddata.cod       
          
 # SOM_PAK/som_pak-3.1/lininit -xdim 12 -ydim 3 -din data/20170408/training.dat -cout editeddata.cod -neigh bubble -topol rect
 
@@ -44,11 +46,15 @@ do
 
       for learning_rate in 1 #  1 2
       do
-         for neighborhood_radius in  2 #  2 5 7 10
+         for neighborhood_radius in  7 #  2 5 7 10
          do
 
-            for ntraining_steps in 50 # 100 200 1000  # 50 100 200
+            for ntraining_steps in 50 # 10 20 50 100 # 100 200 1000  # 50 100 200
             do 
+
+                   rm editeddata_model.cod  
+                   rm mapping_coords.vis    
+
 
                # train the SOM
                echo "training ..."
@@ -63,12 +69,12 @@ do
                # debug version
                # SOM_PAK/som_pak-3.1/visual -din data/20170408/just_a_few_points.dat -cin editeddata_model.cod -dout mapping_coords.vis -v
   
-               for Nyquist in  5  # 2 3 5 7 10
+               for Nyquist in   12  # 2 3 5 7 10
                do
                   # merge the expected values from each grid with the folded data, then unfold as needed to meet expected values
                   # SOM_PAK/som_pak-3.1/merge -grid editeddata_model.cod  -din data/20170408/just_a_few_points.dat -mapping mapping_coords.vis -dout merged.dat -Nyquist $Nyquist
                   echo "merging & unfolding ..."
-                  SOM_PAK/som_pak-3.1/merge -grid editeddata_model.cod  -din data/20170408/just_a_few_points.dat -mapping mapping_coords.vis -dout merged.dat -Nyq $Nyquist
+                  SOM_PAK/som_pak-3.1/merge -grid editeddata_model.cod  -din data/20170408/just_a_few_points.dat -mapping mapping_coords.vis -dout merged.dat -Nyq $Nyquist -p 40
 
 #  426  awk -f tf_result_2list.awk result_fullsize > result_radx_input
 #  427  awk -f tf_result_2list.awk result_fullsize > result_radx_input
@@ -102,15 +108,12 @@ do
                    awk '(NR > 1)' editeddata_model.cod > modelready.txt
                    SOM/radxmodel modelready.txt
                    mv SOM_result SOM_result.nc
-                   $HAWKEYE -f SOM_result.nc -params $HAWKEYE_PARAMS
+                   $HAWKEYE -f SOM_result.nc -params $HAWKEYE_PARAMS_MODEL
                    mv /tmp/images/HawkEye/19700101/radar.SOM_dealias.VEL.png train-$training_sample_percent-grid-$xdim-$ydim-lr-$learning_rate-nb-$neighborhood_radius-steps-$ntraining_steps-Nq-$Nyquist-model.png
 
                    # ---------
 
                    mv SOM_result_SOM_PAK.nc $OUTPUT_DIR
-                   cp editeddata.cod        $OUTPUT_DIR
-                   cp editeddata_model.cod  $OUTPUT_DIR
-                   cp mapping_coords.vis    $OUTPUT_DIR
                    mv merged.dat            $OUTPUT_DIR
 
                 done # for Nyquist

@@ -3,11 +3,12 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <math.h>
 #include <Radx/RadxVol.hh>
 #include <Radx/RadxRay.hh>
 #include <Radx/RadxFile.hh>
 
-#define MAX_GATES 150
+#define MAX_GATES 2000
 
 // TODO: need to read the number of gates as a parameter?!
 
@@ -18,9 +19,10 @@ static float previousAz = -1.0;
 static int nGates = 0;
 static bool first = true;
 
-   double startKm = 2.125;
-   double gateSpacingKm = 0.25;
-
+// TODO: These are specific to a data file
+double startKm = 0.0625;
+double gateSpacingKm = 0.125;
+int magic_nGates = 1930;
 
 // void accumulateData(az, 
 
@@ -30,7 +32,7 @@ void addRayToVolume2(float az, int nGates, float *velocityData) {
    int sweepNumber = 0;
 
    //float az = 315.0;
-   float elevation = 0.3;
+   float elevation = 0.9;
 
    RadxRay *ray = new RadxRay();
    ray->setSweepNumber(sweepNumber);
@@ -48,7 +50,7 @@ void addRayToVolume2(float az, int nGates, float *velocityData) {
 void storeRay(float az, float gate, float velocity) {
 
    if ((az != previousAz) && (!first)) {
-     addRayToVolume2(previousAz, 12, data); // TODO: Magic number!
+     addRayToVolume2(previousAz, magic_nGates, data); // TODO: Magic number!
      nGates = 0;
      for (int i=0; i<MAX_GATES; i++) 
        data[i] = Radx::missingFl32;  // TODO: magic number!
@@ -62,7 +64,7 @@ void storeRay(float az, float gate, float velocity) {
    // accumulate data ...
    //data[nGates] = velocity;
    float whichGatef =  (gate - startKm)/gateSpacingKm;
-   int whichGate = (int) whichGatef;
+   int whichGate = (int) roundf(whichGatef);
    if ((whichGate < 0) || (whichGate >= MAX_GATES)) {
      printf("FATAL ERROR gate index out of bounds %d\n", whichGate);
      exit(-1);
@@ -77,7 +79,7 @@ void addRayToVolume(float az, float gate, float velocity) {
    int sweepNumber = 0;
 
    //float az = 315.0;
-   float elevation = 0.3;
+   float elevation = 0.9;
 
    RadxRay *ray = new RadxRay();
    ray->setSweepNumber(sweepNumber);
@@ -118,7 +120,7 @@ int main(int argc, char *argv[]) {
       printf("%s\n", argv[i]);
    }
 
-   for (int i=0; i<12; i++)
+   for (int i=0; i<magic_nGates; i++)
      data[i] = Radx::missingFl32;  // TODO: magic number!
 
    string line;
@@ -174,7 +176,7 @@ int main(int argc, char *argv[]) {
    int sweepNumber = 0;
 
    float az = 315.0;
-   float elevation = 0.3;
+   float elevation = 0.9;
 
    RadxRay *ray = new RadxRay();
    ray->setSweepNumber(sweepNumber);

@@ -4,16 +4,32 @@
 
 # put all the unique files in separate base directories
 DATE=20180802
+
+#
+#cfrad.20180802_202233.000_to_20180802_202930.000_DUG_DUG_SUR.nc
+#cfrad.20180802_205032.000_to_20180802_205730.000_DUG_DUG_SUR.nc
+#cfrad.20180802_213232.000_to_20180802_213930.000_DUG_DUG_SUR.nc
+#cfrad.20180802_222132.000_to_20180802_222830.000_DUG_DUG_SUR.nc
+#cfrad.20180802_230331.000_to_20180802_231029.000_DUG_DUG_SUR.nc
+#cfrad.20180802_231731.000_to_20180802_232429.000_DUG_DUG_SUR.nc
+#cfrad.20180802_233634.000_to_20180802_234240.000_DUG_DUG_SUR.nc
+#
+for data_file in 202233 205032 213232 222132 230331 231731 233634
+do 
+
 BASE_INPUT_DIR=data/$DATE
-BASE_OUTPUT_DIR=results/$DATE
+BASE_OUTPUT_DIR=results/$DATE/$data_file
 
 # list input and output files
 HAWKEYE=/Applications/HawkEye.app/Contents/MacOS/HawkEye
-HAWKEYE_PARAMS=params.HawkEye
+HAWKEYE_PARAMS=params_DUG_DUG.HawkEye
 HAWKEYE_PARAMS_MODEL=params_model.HawkEye
 CFRADIAL_FILE=
 ONE_SWEEP=$BASE_INPUT_DIR/sweep1
-DATA_FILE=20180802/cfrad.20180802_222132.000_to_20180802_222830.000_DUG_DUG_SUR.nc 
+
+
+#DATA_FILE=20180802/cfrad.20180802_222132.000_to_20180802_222830.000_DUG_DUG_SUR.nc 
+DATA_FILE=20180802/cfrad.20180802_$data_file*.000_DUG_DUG_SUR.nc 
 # first sweep (lowest sweep)
 
 # here are the steps
@@ -23,9 +39,13 @@ for training_sample_percent in 1 #10 # 10 # 15 20 25
 do
  
 # extract the data from a RadxPrint of the cfradial data file
-#RadxPrint -f data/$DATA_FILE -sweep 1 -data -rays > /tmp/radxprint.out
-#awk -f make_data_vectors.awk /tmp/radxprint.out > $ONE_SWEEP.dat 
+RadxPrint -f data/$DATA_FILE -sweep 1 -field VELV -data -rays > /tmp/radxprint.out
+awk -f data/make_data_vectors.awk /tmp/radxprint.out > $ONE_SWEEP.dat 
+awk '(NR > 1) {print $0}' $ONE_SWEEP.dat | sort -R | head -n 100 > $BASE_INPUT_DIR/training_temp.dat
+
 # remember to add the dimension, '3' to the top of the all_points.dat file for SOM_PAK to read
+echo "3" > $BASE_INPUT_DIR/training_$training_sample_percent.dat
+cat $BASE_INPUT_DIR/training_temp.dat >> $BASE_INPUT_DIR/training_$training_sample_percent.dat
 
 # sample_points.py from sample_points_template.py
 #python data/20170408/sample_points_$training_sample_percent.py > $BASE_INPUT_DIR/training_$training_sample_percent.dat
@@ -106,21 +126,18 @@ do
                    # HawkEye should produce a .png image of the data
                    # $HAWKEYE -f $CFRADIAL_FILE -params $HAWKEYE_PARAMS
                    $HAWKEYE -f SOM_result_SOM_PAK.nc -params $HAWKEYE_PARAMS # -images_file_name_category "$xdim-$ydim"
-                   mv /tmp/images/HawkEye/19700101/radar.SOM_dealias.VEL.png train-$training_sample_percent-grid-$xdim-$ydim-lr-$learning_rate-nb-$neighborhood_radius-steps-$ntraining_steps-Nq-$Nyquist.png
+                   mv /tmp/images/HawkEye/19700101/radar.SOM_dealias.VELV.png $OUTPUT_DIR/train-$training_sample_percent-grid-$xdim-$ydim-lr-$learning_rate-nb-$neighborhood_radius-steps-$ntraining_steps-Nq-$Nyquist.png
                    # --------------
-                   # make an image of the model produced ...
-                   #awk '(NR > 1)' editeddata_model.cod > modelready.txt
-                   #SOM/radxmodel modelready.txt
-                   #mv SOM_result SOM_result.nc
-                   #$HAWKEYE -f SOM_result.nc -params $HAWKEYE_PARAMS_MODEL
-                   #mv /tmp/images/HawkEye/19700101/radar.SOM_dealias.VEL.png train-$training_sample_percent-grid-$xdim-$ydim-lr-$learning_rate-nb-$neighborhood_radius-steps-$ntraining_steps-Nq-$Nyquist-model.png
+                   # make an image of the unfolded data ...
+                   $HAWKEYE -f data/$DATA_FILE -params params_DUG_DUG_folded.HawkEye
+                   mv /tmp/images/HawkEye/$DATE/radar.SOM_dealias.VELV.png $OUTPUT_DIR/folded.png
 
                    # ---------
 
                    mv SOM_result_SOM_PAK.nc $OUTPUT_DIR
                    mv merged.dat            $OUTPUT_DIR
 
-                   open train-$training_sample_percent-grid-$xdim-$ydim-lr-$learning_rate-nb-$neighborhood_radius-steps-$ntraining_steps-Nq-$Nyquist*.png
+                   # open train-$training_sample_percent-grid-$xdim-$ydim-lr-$learning_rate-nb-$neighborhood_radius-steps-$ntraining_steps-Nq-$Nyquist*.png
 
                 done # for Nyquist
             done # for learning_rate
@@ -131,3 +148,4 @@ done    # xdim
 
 done # for training sample size
 
+done # for data set

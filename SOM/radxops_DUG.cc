@@ -41,7 +41,7 @@ void addRayToVolume2(float az, int nGates, float *velocityData) {
    ray->setRangeGeom(startKm, gateSpacingKm);
    bool isLocal = true;
    float missingValue = Radx::missingFl32;
-   ray->addField("VEL", "dbz", (size_t) nGates, missingValue, velocityData, isLocal);
+   ray->addField("VELV", "dbz", (size_t) nGates, missingValue, velocityData, isLocal);
 
    vol.addRay(ray);
 }
@@ -65,6 +65,15 @@ void storeRay(float az, float gate, float velocity) {
    //data[nGates] = velocity;
    float whichGatef =  (gate - startKm)/gateSpacingKm;
    int whichGate = (int) roundf(whichGatef);
+
+   if ((az < 185) && (az >= 184)) {
+     printf("az: %f, gate=%f,  whichGate = %d\n", az, gate, whichGate);
+   }
+   
+   if ((whichGate < 0) || (whichGate >= MAX_GATES)) {
+     printf("FATAL ERROR gate index out of bounds %d\n", whichGate);
+     exit(-1);
+   }
    if ((whichGate < 0) || (whichGate >= MAX_GATES)) {
      printf("FATAL ERROR gate index out of bounds %d\n", whichGate);
      exit(-1);
@@ -93,7 +102,7 @@ void addRayToVolume(float az, float gate, float velocity) {
    data[0] = velocity; 
    float missingValue = Radx::missingFl64;
    size_t nGates = 1;
-   ray->addField("VEL", "dbz", nGates, missingValue, data, isLocal);
+   ray->addField("VELV", "dbz", nGates, missingValue, data, isLocal);
 
    vol.addRay(ray);
 }
@@ -189,7 +198,7 @@ int main(int argc, char *argv[]) {
    float data[12] = {1,2,3,4,5,6,7,8,9,10,11,12};
    float missingValue = Radx::missingFl64;
    size_t nGates = 12;
-   ray->addField("VEL", "dbz", nGates, missingValue, data, isLocal);
+   ray->addField("VELV", "dbz", nGates, missingValue, data, isLocal);
 
 
    vol.addRay(ray);

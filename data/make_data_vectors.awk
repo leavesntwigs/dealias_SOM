@@ -21,9 +21,8 @@ BEGIN {print 3}
 /gateSpacingKm:/ {gateSpacing = $2}
 /startRangeKm:/  {startRange = $2}
 
-/Data/ {start = 1; gate = 0; }
 # /(MISS)|(:digit:)|(\*)/ { if (start) {
-$0 ~ /[:digit:]*/ { if (start) {
+$0 ~ /[0-9]+/ { if (start) {
                         for (i=1; i<=NF; i++) {
                            # print $i
                            npieces = split($i, pieces, "*")
@@ -37,21 +36,29 @@ $0 ~ /[:digit:]*/ { if (start) {
                                       print az, range, velocity
                                       gate += 1
                                    }
-                               } else { # assume MISS
+                               } 
+                               if (pieces[2] ~ /MISS/) { # assume MISS
                                    gate += pieces[1] 
                                } # end MISS
-			   } #else { # end if npieces > 1
-                              # else no repeater
-			     #  print az, range, $i
-                             #  gate += 1
-			   #} # end else no repeater               
+			   } else { 
+                               if ($i ~ /[0-9]+/) { # single numeric value
+                                  # else no repeater
+                                  range = startRange + gateSpacing * gate
+			          print az, range, $i
+                                  gate += 1
+                               }
+                               if ($i ~ /MISS/) { # single MISS value
+                                  gate += 1
+			       }
+			   } # end else no repeater               
                         }
                       }
                     }
 
 
-/=========================/ { 
+/==============================/ { 
                  if (start) {
                     start = 0;
                  }
                }
+/Data/ {start = 1; gate = 0; }

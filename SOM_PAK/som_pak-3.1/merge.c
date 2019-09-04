@@ -77,12 +77,13 @@ float unfold(float az, float velocity_expected, float velocity_apparent, float N
   float ve = velocity_expected;
   float velocity_unfolded = va;
 
+  float n = roundf((va - ve*(1.0+percent))/(2.0*Nyquist));
   if ((va < -11.0)) {
-    printf("az %f va=%f mapped to ve=%f\n", az, va, ve);
+    printf("az %f va=%f mapped to ve=%f n = %f\n", az, va, ve, n);
   }
-  int n = (int) round((va - ve*(1.0+percent))/(2.0*Nyquist));
 
-  if (n > 0) {
+
+  if (fabs(n) > 0) {
     //float sign = 0.0;
     //if (va < ve)
     //  sign = 1.0;
@@ -91,7 +92,7 @@ float unfold(float az, float velocity_expected, float velocity_apparent, float N
   
     //velocity_unfolded = va + sign * n * 2.0*Nyquist;
     velocity_unfolded = va + (-1) * n * 2.0*Nyquist;
-    printf("az: %f, va = %f, ve = %f, n = %d, velocity_unfolded = %f\n",
+    printf("az: %f, va = %f, ve = %f, n = %f, velocity_unfolded = %f\n",
 	   az, va, ve, n, velocity_unfolded);
   }
 
